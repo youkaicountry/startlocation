@@ -1,4 +1,4 @@
-Start Location
+Server Start Location
 --------------
 
 This simple mod adds a start position that the player warps to on death,
