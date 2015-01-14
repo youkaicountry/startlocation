@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 startlocation = {}
 startlocation.location = {x=0, y=0, z=0}
 startlocation.initialized = false
+startlocation.exclusion = {}
 
 function startlocation.set_start(pos)
 	startlocation.location = vector.round(pos)
@@ -43,7 +44,21 @@ function startlocation.move_all_online()
     end
 end
 
-function startlocation.load()
+function startlocation.move_all_offline()
+    -- Exclude only the online players
+    startlocation.exclusion = {}
+    for _,player in ipairs(minetest.get_connected_players()) do
+        startlocation.exclusion[player:get_player_name()] = true
+    end
+    startlocation.save_exclusion()
+end
+
+function startlocation.move_all()
+    startlocation.move_all_offline()
+    startlocation.move_all_online()
+end
+
+function startlocation.load_location()
 	local input = io.open(minetest.get_worldpath() .. "/startlocation", "r")
 	if not input then
 		return
@@ -53,14 +68,39 @@ function startlocation.load()
 	io.close(input)
 end
 
-function startlocation.save()
+function startlocation.save_location()
 	local output = io.open(minetest.get_worldpath() .. "/startlocation", "w")
 	output:write(minetest.serialize(startlocation.location))
 	io.close(output)
 end
 
+function startlocation.load_exclusion()
+	local input = io.open(minetest.get_worldpath() .. "/startlocationex", "r")
+	if not input then
+		return
+	end
+	startlocation.exclusion = minetest.deserialize(input:read("*l"))
+	io.close(input)
+end
+
+function startlocation.save_exclusion()
+	local output = io.open(minetest.get_worldpath() .. "/startlocationex", "w")
+	output:write(minetest.serialize(startlocation.exclusion))
+	io.close(output)
+end
+
 minetest.register_on_newplayer(function(player)
 	startlocation.move_player_to(player)
+    startlocation.exclusion[player:get_player_name()] = true
+    startlocation.save_exclusion()
+end)
+
+minetest.register_on_joinplayer(function(player)
+    if startlocation.exclusion[player:get_player_name()] == nil then
+        startlocation.move_player_to(player)
+        startlocation.exclusion[player:get_player_name()] = true
+        startlocation.save_exclusion()
+    end
 end)
 
 minetest.register_privilege("startlocation", {
@@ -105,8 +145,27 @@ minetest.register_chatcommand("allongotostart", {
 	end,
 })
 
+minetest.register_chatcommand("alloffgotostart", {
+	params = "",
+	privs = {startlocation=true},
+	description = "Teleport all offline players to the start location.",
+	func = function(name, param)
+		startlocation.move_all_offline()
+	end,
+})
+
+minetest.register_chatcommand("allgotostart", {
+	params = "",
+	privs = {startlocation=true},
+	description = "Teleport all players offline or online to the start location.",
+	func = function(name, param)
+		startlocation.move_all()
+	end,
+})
+
 minetest.register_on_respawnplayer(function(player)
 	return startlocation.move_player_to(player)
 end)
 
-startlocation.load()
+startlocation.load_location()
+startlocation.load_exclusion()

@@ -12,9 +12,13 @@ to the following new commands:
 
 /setstart - sets the start location to wherever the invoking user is standing.
 
-/gotostart - teleport to the start location
+/gotostart - teleport to the start location.
 
 /allongotostart - teleport all players online to the start location.
+
+/alloffgotostart - teleport all players offline to the start location.
+
+/allgotostart - teleport all players offline or online to the start location.
 
 In addition, if there is a valid start location then all NEW players will 
 begin life at the start location.
