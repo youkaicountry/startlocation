@@ -27,12 +27,14 @@ function startlocation.set_start(pos)
 	startlocation.save()
 end
 
+-- Returns true if successful, else false
 function startlocation.move_player_to(player)
 	if not startlocation.initialized then
 		minetest.chat_send_all("No start location. One should be set via the setstart command.")
-		return
+		return false
 	end
 	player:setpos(startlocation.location)
+    return true
 end
 
 function startlocation.load()
@@ -89,7 +91,7 @@ minetest.register_chatcommand("gotostart", {
 })
 
 minetest.register_on_respawnplayer(function(player)
-	return true
+	return startlocation.move_player_to(player)
 end)
 
 startlocation.load()
