@@ -37,6 +37,12 @@ function startlocation.move_player_to(player)
     return true
 end
 
+function startlocation.move_all_online()
+    for _,player in ipairs(minetest.get_connected_players()) do
+        startlocation.move_player_to(player)
+    end
+end
+
 function startlocation.load()
 	local input = io.open(minetest.get_worldpath() .. "/startlocation", "r")
 	if not input then
@@ -87,6 +93,15 @@ minetest.register_chatcommand("gotostart", {
 			return false, "Player not found"
 		end
 		startlocation.move_player_to(player)
+	end,
+})
+
+minetest.register_chatcommand("allongotostart", {
+	params = "",
+	privs = {startlocation=true},
+	description = "Teleport all online players to the start location.",
+	func = function(name, param)
+		startlocation.move_all_online()
 	end,
 })
 
