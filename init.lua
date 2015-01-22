@@ -25,7 +25,7 @@ startlocation.exclusion = {}
 function startlocation.set_start(pos)
 	startlocation.location = vector.round(pos)
 	startlocation.initialized = true
-	startlocation.save()
+	startlocation.save_location()
 end
 
 -- Returns true if successful, else false
